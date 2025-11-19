@@ -15,7 +15,7 @@ export interface TeamDeskConfig {
   user?: string;
   /** Password for basic auth (alternative to token) */
   password?: string;
-  /** Base URL for the API (defaults to https://www.teamdesk.net/secure/api/v2 or https://pro.dbflex.net/secure/api/v2) */
+  /** Base URL for the API (defaults to https://www.teamdesk.net/secure/api/v2; override for DBFlex https://my.dbflex.net/secure/api/v2 or custom domains) */
   baseUrl?: string;
   /**
    * Directory for caching responses (defaults to "./_tdcache")

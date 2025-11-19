@@ -13,9 +13,11 @@
  *
  * // Full configuration options
  * const client = new TeamDeskClient({
- *   appId: 15331,
+ *   appId: 12345,
  *   token: Deno.env.get("TD_TOKEN")!,
- *   baseUrl: "https://pro.dbflex.net/secure/api/v2", // optional
+ *   // defaults to https://www.teamdesk.net/secure/api/v2
+ *   // override for DBFlex or custom domains
+ *   baseUrl: "https://my.dbflex.net/secure/api/v2",
  *   cacheDir: "./_tdcache", // optional, defaults to "./_tdcache", set to null to disable
  *   debug: false // optional
  * });

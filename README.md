@@ -38,9 +38,9 @@ import { TeamDeskClient } from "@rick/tedasuke";
 ```typescript
 import { TeamDeskClient } from "jsr:@rick/tedasuke";
 
-// Create a client
+// Create a client (defaults to TeamDesk API)
 const client = new TeamDeskClient({
-  appId: 15331,
+  appId: 12345,
   token: Deno.env.get("TD_TOKEN")!,
 });
 
@@ -233,7 +233,7 @@ import { TeamDeskClient } from "jsr:@rick/tedasuke";
 
 // Caching is automatic - defaults to "./_tdcache" directory
 const client = new TeamDeskClient({
-  appId: 15331,
+  appId: 12345,
   token: Deno.env.get("API_KEY")!,
 });
 ```
@@ -242,7 +242,7 @@ const client = new TeamDeskClient({
 
 ```typescript
 const client = new TeamDeskClient({
-  appId: 15331,
+  appId: 12345,
   token: Deno.env.get("API_KEY")!,
   cacheDir: "src/_data/_tdcache", // Custom location
 });
@@ -252,7 +252,7 @@ const client = new TeamDeskClient({
 
 ```typescript
 const client = new TeamDeskClient({
-  appId: 15331,
+  appId: 12345,
   token: Deno.env.get("API_KEY")!,
   cacheDir: null, // or false - disables caching
 });
@@ -264,7 +264,7 @@ const client = new TeamDeskClient({
 import { fetchWithCache, TeamDeskClient } from "jsr:@rick/tedasuke";
 
 const client = new TeamDeskClient({
-  appId: 15331,
+  appId: 12345,
   token: Deno.env.get("API_KEY")!,
   cacheDir: "./_tdcache", // Configure once
 });
@@ -297,9 +297,9 @@ Perfect for static site generation with Lume:
 import { TeamDeskClient } from "jsr:@rick/tedasuke";
 
 const td = new TeamDeskClient({
-  appId: 15331,
-  token: Deno.env.get("API_KEY_01")!,
-  baseUrl: "https://pro.dbflex.net/secure/api/v2",
+  appId: 12345,
+  token: Deno.env.get("API_KEY")!,
+  baseUrl: "https://my.dbflex.net/secure/api/v2", // for DBFlex
 });
 
 // These exports become available in your Lume templates
@@ -334,9 +334,11 @@ Main client class for interacting with TeamDesk.
 - `token` (string) - API token (preferred authentication method)
 - `user` (string) - Username for basic auth (alternative to token)
 - `password` (string) - Password for basic auth (alternative to token)
-- `baseUrl` (string) - Custom API base URL (optional, defaults to TeamDesk)
-- `cacheDir` (string | null | false) - Cache directory path (optional, defaults
-  to `./_tdcache`, set to `null` or `false` to disable)
+- `baseUrl` (string) - API base URL (defaults to
+  `https://www.teamdesk.net/secure/api/v2`; override for DBFlex
+  `https://my.dbflex.net/secure/api/v2` or custom domains)
+- `cacheDir` (string | null | false) - Cache directory path (defaults to
+  `./_tdcache`; set to `null` or `false` to disable)
 - `debug` (boolean) - Enable debug logging (optional)
 
 **Methods:**
@@ -419,7 +421,7 @@ TeDasuke supports two authentication methods:
 
 ```typescript
 const client = new TeamDeskClient({
-  appId: 15331,
+  appId: 12345,
   token: "your-api-token",
 });
 ```
@@ -428,7 +430,7 @@ const client = new TeamDeskClient({
 
 ```typescript
 const client = new TeamDeskClient({
-  appId: 15331,
+  appId: 12345,
   user: "username",
   password: "password",
 });
@@ -440,9 +442,9 @@ For DBFlex or custom installations:
 
 ```typescript
 const client = new TeamDeskClient({
-  appId: 15331,
+  appId: 12345,
   token: "your-token",
-  baseUrl: "https://pro.dbflex.net/secure/api/v2",
+  baseUrl: "https://my.dbflex.net/secure/api/v2",
 });
 ```
 
@@ -452,7 +454,7 @@ Enable debug logging to see all API requests:
 
 ```typescript
 const client = new TeamDeskClient({
-  appId: 15331,
+  appId: 12345,
   token: "your-token",
   debug: true,
 });
@@ -482,7 +484,7 @@ deno task preflight
 Set up environment variables:
 
 ```bash
-export TD_APP_ID=15331
+export TD_APP_ID=12345
 export TD_TOKEN="your-api-token"
 ```
 
