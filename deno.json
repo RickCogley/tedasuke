@@ -1,6 +1,6 @@
 {
   "name": "@rick/tedasuke",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "exports": "./mod.ts",
   "tasks": {
     "example": "deno run --allow-net --allow-env examples/basic-usage.ts",
