@@ -4,10 +4,14 @@
  * A fluent, type-safe library for interacting with the TeamDesk/DBFlex REST API.
  * "TeDasuke" (手助け) means "helping hand" in Japanese.
  *
+ * Features automatic caching for build resilience - falls back to cached data
+ * when the API is unavailable.
+ *
  * @example
  * ```typescript
- * import { TeamDeskClient } from "jsr:@rick/tedasuke";
+ * import { TeamDeskClient, fetchWithCache } from "jsr:@rick/tedasuke";
  *
+ * // Caching is enabled by default (uses "./_tdcache")
  * const client = new TeamDeskClient({
  *   appId: 15331,
  *   token: Deno.env.get("TD_TOKEN")!
@@ -34,6 +38,17 @@
  *   .view('Active Orders')
  *   .select()
  *   .execute();
+ *
+ * // Cache fallback for build resilience
+ * const result = await fetchWithCache(
+ *   client,
+ *   "orders",
+ *   () => client.table('Orders').select().execute()
+ * );
+ *
+ * if (result.fromCache) {
+ *   console.warn(`Using cached data (${result.cacheAge?.toFixed(1)} min old)`);
+ * }
  * ```
  *
  * @module
