@@ -17,8 +17,12 @@ export interface TeamDeskConfig {
   password?: string;
   /** Base URL for the API (defaults to https://www.teamdesk.net/secure/api/v2 or https://pro.dbflex.net/secure/api/v2) */
   baseUrl?: string;
-  /** Directory for caching responses (optional, for fallback scenarios) */
-  cacheDir?: string;
+  /**
+   * Directory for caching responses (defaults to "./_tdcache")
+   * Set to null or false to disable caching
+   * Set to string path to use custom cache directory
+   */
+  cacheDir?: string | null | false;
   /** Enable debug logging */
   debug?: boolean;
 }

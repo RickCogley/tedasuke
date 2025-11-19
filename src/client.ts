@@ -41,7 +41,10 @@ export class TeamDeskClient {
     & Required<
       Pick<TeamDeskConfig, "appId" | "baseUrl" | "debug">
     >
-    & Pick<TeamDeskConfig, "token" | "user" | "password" | "cacheDir">;
+    & Pick<TeamDeskConfig, "token" | "user" | "password">
+    & {
+      cacheDir?: string;
+    };
 
   constructor(config: TeamDeskConfig) {
     // Validate configuration
@@ -56,6 +59,19 @@ export class TeamDeskClient {
     }
 
     // Set defaults
+    // cacheDir defaults to "./_tdcache" unless explicitly set to null/false
+    let cacheDir: string | undefined;
+    if (config.cacheDir === null || config.cacheDir === false) {
+      // Explicitly disabled
+      cacheDir = undefined;
+    } else if (config.cacheDir === undefined) {
+      // Not specified, use default
+      cacheDir = "./_tdcache";
+    } else {
+      // Custom path specified
+      cacheDir = config.cacheDir;
+    }
+
     this.config = {
       appId: String(config.appId),
       baseUrl: config.baseUrl || "https://www.teamdesk.net/secure/api/v2",
@@ -63,7 +79,7 @@ export class TeamDeskClient {
       token: config.token,
       user: config.user,
       password: config.password,
-      cacheDir: config.cacheDir,
+      cacheDir,
     };
 
     // Remove trailing slash from baseUrl
@@ -106,9 +122,9 @@ export class TeamDeskClient {
 
   /**
    * Get the configured cache directory
-   * Returns undefined if no cache directory was configured
+   * Returns undefined if caching is disabled
    *
-   * @returns Cache directory path or undefined
+   * @returns Cache directory path or undefined if caching disabled
    */
   public getCacheDir(): string | undefined {
     return this.config.cacheDir;

@@ -221,6 +221,73 @@ try {
 }
 ```
 
+### Cache Fallback (Build Resilience)
+
+TeDasuke includes automatic caching to disk for build resilience. **Caching is
+enabled by default** and falls back to cached data when the API is unavailable.
+
+**Default behavior:**
+
+```typescript
+import { TeamDeskClient } from "jsr:@rick/tedasuke";
+
+// Caching is automatic - defaults to "./_tdcache" directory
+const client = new TeamDeskClient({
+  appId: 15331,
+  token: Deno.env.get("API_KEY")!,
+});
+```
+
+**Custom cache directory:**
+
+```typescript
+const client = new TeamDeskClient({
+  appId: 15331,
+  token: Deno.env.get("API_KEY")!,
+  cacheDir: "src/_data/_tdcache", // Custom location
+});
+```
+
+**Disable caching:**
+
+```typescript
+const client = new TeamDeskClient({
+  appId: 15331,
+  token: Deno.env.get("API_KEY")!,
+  cacheDir: null, // or false - disables caching
+});
+```
+
+**Using `fetchWithCache` helper:**
+
+```typescript
+import { fetchWithCache, TeamDeskClient } from "jsr:@rick/tedasuke";
+
+const client = new TeamDeskClient({
+  appId: 15331,
+  token: Deno.env.get("API_KEY")!,
+  cacheDir: "./_tdcache", // Configure once
+});
+
+// Pass client directly - it uses the configured cache directory
+const result = await fetchWithCache(
+  client,
+  "orders",
+  () => client.table("Orders").select().execute(),
+);
+
+if (result.fromCache) {
+  console.warn(
+    `Using cached data (${result.cacheAge?.toFixed(1)} minutes old)`,
+  );
+}
+
+export const orders = result.data;
+```
+
+This ensures your static site builds succeed even when the API is temporarily
+unavailable.
+
 ### Lume SSG Integration
 
 Perfect for static site generation with Lume:
@@ -268,6 +335,8 @@ Main client class for interacting with TeamDesk.
 - `user` (string) - Username for basic auth (alternative to token)
 - `password` (string) - Password for basic auth (alternative to token)
 - `baseUrl` (string) - Custom API base URL (optional, defaults to TeamDesk)
+- `cacheDir` (string | null | false) - Cache directory path (optional, defaults
+  to `./_tdcache`, set to `null` or `false` to disable)
 - `debug` (boolean) - Enable debug logging (optional)
 
 **Methods:**
