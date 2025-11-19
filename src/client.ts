@@ -41,7 +41,7 @@ export class TeamDeskClient {
     & Required<
       Pick<TeamDeskConfig, "appId" | "baseUrl" | "debug">
     >
-    & Pick<TeamDeskConfig, "token" | "user" | "password">;
+    & Pick<TeamDeskConfig, "token" | "user" | "password" | "cacheDir">;
 
   constructor(config: TeamDeskConfig) {
     // Validate configuration
@@ -63,6 +63,7 @@ export class TeamDeskClient {
       token: config.token,
       user: config.user,
       password: config.password,
+      cacheDir: config.cacheDir,
     };
 
     // Remove trailing slash from baseUrl
@@ -101,6 +102,16 @@ export class TeamDeskClient {
   public async describe(): Promise<DatabaseSchema> {
     const url = this.buildUrl("/describe.json");
     return await this.request<DatabaseSchema>(url);
+  }
+
+  /**
+   * Get the configured cache directory
+   * Returns undefined if no cache directory was configured
+   *
+   * @returns Cache directory path or undefined
+   */
+  public getCacheDir(): string | undefined {
+    return this.config.cacheDir;
   }
 
   /**

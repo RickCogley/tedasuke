@@ -3,6 +3,8 @@
  * Helper functions for caching API responses to disk
  */
 
+import type { TeamDeskClient } from "./client.ts";
+
 /**
  * Save data to a cache file
  *
@@ -104,31 +106,48 @@ export async function clearCache(cacheDir: string): Promise<void> {
 /**
  * Fetch data with automatic fallback to cache
  *
- * @param cacheDir - Directory for cache files
+ * @param cacheDirOrClient - Directory for cache files, or TeamDeskClient with cacheDir configured
  * @param key - Cache key
  * @param fetcher - Function that fetches fresh data
  * @returns Object with data and metadata
  *
  * @example
  * ```typescript
+ * // With explicit cache directory
  * const result = await fetchWithCache(
  *   './_cache',
  *   'orders',
- *   async () => {
- *     return await client.table('Orders').select().execute();
- *   }
+ *   async () => client.table('Orders').select().execute()
  * );
  *
- * if (result.fromCache) {
- *   console.warn('Using cached data');
- * }
+ * // With client's configured cache directory
+ * const client = new TeamDeskClient({ ..., cacheDir: './_cache' });
+ * const result = await fetchWithCache(
+ *   client,
+ *   'orders',
+ *   async () => client.table('Orders').select().execute()
+ * );
  * ```
  */
 export async function fetchWithCache<T>(
-  cacheDir: string,
+  cacheDirOrClient: string | TeamDeskClient,
   key: string,
   fetcher: () => Promise<T>,
 ): Promise<{ data: T; fromCache: boolean; cacheAge?: number }> {
+  // Determine cache directory
+  let cacheDir: string;
+  if (typeof cacheDirOrClient === "string") {
+    cacheDir = cacheDirOrClient;
+  } else {
+    const configuredCacheDir = cacheDirOrClient.getCacheDir();
+    if (!configuredCacheDir) {
+      throw new Error(
+        "Client does not have cacheDir configured. Either configure it in TeamDeskConfig or pass a cache directory string to fetchWithCache()",
+      );
+    }
+    cacheDir = configuredCacheDir;
+  }
+
   try {
     // Try to fetch fresh data
     const data = await fetcher();
