@@ -1,0 +1,32 @@
+{
+  "name": "@rcogley/tedasuke",
+  "version": "0.1.0",
+  "exports": "./mod.ts",
+  "tasks": {
+    "example": "deno run --allow-net --allow-env examples/basic-usage.ts",
+    "test": "deno test --allow-net --allow-env",
+    "check": "deno check **/*.ts",
+    "lint": "deno lint",
+    "fmt": "deno fmt",
+    "preflight": "deno fmt && deno check **/*.ts && deno lint",
+    "publish": "deno publish --dry-run"
+  },
+  "fmt": {
+    "semiColons": true,
+    "singleQuote": false
+  },
+  "lint": {
+    "rules": {
+      "tags": ["recommended"]
+    }
+  },
+  "publish": {
+    "exclude": [
+      ".git",
+      ".github",
+      "examples",
+      "tests",
+      "docs"
+    ]
+  }
+}
