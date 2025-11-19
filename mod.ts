@@ -11,10 +11,13 @@
  * ```typescript
  * import { TeamDeskClient, fetchWithCache } from "jsr:@rick/tedasuke";
  *
- * // Caching is enabled by default (uses "./_tdcache")
+ * // Full configuration options
  * const client = new TeamDeskClient({
  *   appId: 15331,
- *   token: Deno.env.get("TD_TOKEN")!
+ *   token: Deno.env.get("TD_TOKEN")!,
+ *   baseUrl: "https://pro.dbflex.net/secure/api/v2", // optional
+ *   cacheDir: "./_tdcache", // optional, defaults to "./_tdcache", set to null to disable
+ *   debug: false // optional
  * });
  *
  * // Simple query
