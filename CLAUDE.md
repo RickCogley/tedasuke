@@ -2,7 +2,8 @@
 
 ## Overview
 
-TeDasuke (手助け - "helping hand") is a fluent, type-safe TypeScript library for the Foresoft TeamDesk (aka dbFLEX) REST API, designed to be published on JSR.
+TeDasuke (手助け - "helping hand") is a fluent, type-safe TypeScript library for
+the Foresoft TeamDesk (aka dbFLEX) REST API, designed to be published on JSR.
 
 ## Project Structure
 
@@ -35,20 +36,24 @@ tedasuke/
 
 1. **Fluent API Pattern**: Method chaining for readable queries
    ```typescript
-   client.table('Orders').select().filter('[Status]="Active"').execute()
+   client.table("Orders").select().filter('[Status]="Active"').execute();
    ```
 
-2. **Type Safety**: Generic types throughout for autocomplete and compile-time checking
+2. **Type Safety**: Generic types throughout for autocomplete and compile-time
+   checking
 
 3. **Zero Dependencies**: Uses only Deno/Web standard APIs (fetch, URL, etc.)
 
-4. **Builder Pattern**: SelectBuilder for complex queries with progressive disclosure
+4. **Builder Pattern**: SelectBuilder for complex queries with progressive
+   disclosure
 
-5. **Error Handling**: Rich error context with specific error types (AuthenticationError, ValidationError, etc.)
+5. **Error Handling**: Rich error context with specific error types
+   (AuthenticationError, ValidationError, etc.)
 
 ## Implementation Status
 
 **Phase 1: Core Foundation** ✅ COMPLETED
+
 - Project setup (jsr.json, deno.json)
 - TeamDeskClient with authentication
 - Basic HTTP request wrapper with error handling
@@ -62,48 +67,58 @@ tedasuke/
 ## Usage Patterns
 
 ### Basic Select
+
 ```typescript
-const data = await client.table('Orders').select().execute();
+const data = await client.table("Orders").select().execute();
 ```
 
 ### With View
+
 ```typescript
-const data = await client.table('Orders').view('Active Orders').select().execute();
+const data = await client.table("Orders").view("Active Orders").select()
+  .execute();
 ```
 
 ### With Filtering, Sorting, Pagination
+
 ```typescript
 const data = await client
-  .table('Orders')
-  .select(['OrderID', 'Total'])
+  .table("Orders")
+  .select(["OrderID", "Total"])
   .filter('[Status]="Active"')
-  .sort('OrderDate', 'DESC')
+  .sort("OrderDate", "DESC")
   .limit(100)
   .execute();
 ```
 
 ### Auto-pagination
+
 ```typescript
-for await (const batch of client.table('Orders').select().selectAll()) {
+for await (const batch of client.table("Orders").select().selectAll()) {
   // Process batches of up to 500 records
 }
 ```
 
 ### Write Operations
+
 ```typescript
 // Create
-await client.table('Clients').create([{ Name: 'Acme' }]);
+await client.table("Clients").create([{ Name: "Acme" }]);
 
 // Update
-await client.table('Clients').update([{ key: 'ID123', Status: 'Active' }]);
+await client.table("Clients").update([{ key: "ID123", Status: "Active" }]);
 
 // Upsert
-await client.table('Contacts').upsert([{ Email: 'john@example.com', Name: 'John' }], 'Email');
+await client.table("Contacts").upsert([{
+  Email: "john@example.com",
+  Name: "John",
+}], "Email");
 ```
 
 ## Testing Requirements
 
 For API testing, we need:
+
 1. TeamDesk/DBFlex API credentials (token)
 2. A test table with:
    - Text columns

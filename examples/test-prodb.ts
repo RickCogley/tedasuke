@@ -102,7 +102,12 @@ try {
     .execute();
   console.log(`✅ projectslast: ${projectslast.length} records`);
   if (projectslast.length > 0) {
-    console.log("   Projects:", projectslast.map((p: any) => p.Title || p.Name || "Untitled"));
+    console.log(
+      "   Projects:",
+      projectslast.map((p: Record<string, unknown>) =>
+        p.Title || p.Name || "Untitled"
+      ),
+    );
   }
   console.log();
 
@@ -136,9 +141,9 @@ try {
   console.log();
 
   // Summary
-  console.log("=" .repeat(60));
+  console.log("=".repeat(60));
   console.log("🎉 ALL TESTS PASSED!");
-  console.log("=" .repeat(60));
+  console.log("=".repeat(60));
   console.log("\n📊 Summary:");
   console.log(`   - futureholidays: ${futureholidays.length} records`);
   console.log(`   - nextholiday: ${nextholiday.length} records`);

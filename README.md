@@ -2,7 +2,8 @@
 
 A fluent, type-safe TypeScript client library for the TeamDesk/DBFlex REST API.
 
-**TeDasuke** (手助け) means "helping hand" in Japanese - and that's exactly what this library provides for working with the TeamDesk API.
+**TeDasuke** (手助け) means "helping hand" in Japanese - and that's exactly what
+this library provides for working with the TeamDesk API.
 
 ## Features
 
@@ -40,15 +41,15 @@ import { TeamDeskClient } from "jsr:@rick/tedasuke";
 // Create a client
 const client = new TeamDeskClient({
   appId: 15331,
-  token: Deno.env.get("TD_TOKEN")!
+  token: Deno.env.get("TD_TOKEN")!,
 });
 
 // Fetch data with a fluent API
 const orders = await client
-  .table('Orders')
-  .select(['OrderID', 'Total', 'CustomerName'])
+  .table("Orders")
+  .select(["OrderID", "Total", "CustomerName"])
   .filter('[Status]="Active"')
-  .sort('OrderDate', 'DESC')
+  .sort("OrderDate", "DESC")
   .limit(100)
   .execute();
 
@@ -62,34 +63,34 @@ console.log(`Found ${orders.length} orders`);
 ```typescript
 // Select all records from a table
 const clients = await client
-  .table('Clients')
+  .table("Clients")
   .select()
   .execute();
 
 // Select specific columns
 const orders = await client
-  .table('Orders')
-  .select(['OrderID', 'Total', 'CustomerName'])
+  .table("Orders")
+  .select(["OrderID", "Total", "CustomerName"])
   .execute();
 
 // With filtering
 const activeOrders = await client
-  .table('Orders')
+  .table("Orders")
   .select()
   .filter('[Status]="Active" and [Total]>1000')
   .execute();
 
 // With sorting
 const recentOrders = await client
-  .table('Orders')
+  .table("Orders")
   .select()
-  .sort('OrderDate', 'DESC')
+  .sort("OrderDate", "DESC")
   .limit(50)
   .execute();
 
 // Pagination
 const page2 = await client
-  .table('Orders')
+  .table("Orders")
   .select()
   .skip(100)
   .limit(100)
@@ -98,20 +99,21 @@ const page2 = await client
 
 ### Using Views
 
-Views are pre-configured queries in the TeamDesk UI. TeDasuke makes them easy to use:
+Views are pre-configured queries in the TeamDesk UI. TeDasuke makes them easy to
+use:
 
 ```typescript
 // Access a view
 const activeOrders = await client
-  .table('Orders')
-  .view('Active Orders')
+  .table("Orders")
+  .view("Active Orders")
   .select()
   .execute();
 
 // Views with pagination
 const topProjects = await client
-  .table('Projects')
-  .view('Top Projects')
+  .table("Projects")
+  .view("Top Projects")
   .select()
   .limit(10)
   .execute();
@@ -123,7 +125,7 @@ Add TypeScript types for autocomplete and type checking:
 
 ```typescript
 interface Order {
-  '@row.id': number;
+  "@row.id": number;
   OrderID: string;
   CustomerName: string;
   Total: number;
@@ -132,12 +134,12 @@ interface Order {
 }
 
 const orders = await client
-  .table<Order>('Orders')
+  .table<Order>("Orders")
   .select()
   .execute();
 
 // Now you get autocomplete and type safety
-orders.forEach(order => {
+orders.forEach((order) => {
   console.log(order.CustomerName); // TypeScript knows this exists
 });
 ```
@@ -148,7 +150,7 @@ Fetch all records automatically with batch processing:
 
 ```typescript
 // Automatically handles pagination in 500-record batches
-for await (const batch of client.table('Orders').select().selectAll()) {
+for await (const batch of client.table("Orders").select().selectAll()) {
   console.log(`Processing batch of ${batch.length} orders`);
   // Process each batch
 }
@@ -159,33 +161,33 @@ for await (const batch of client.table('Orders').select().selectAll()) {
 ```typescript
 // Create records
 const newClients = await client
-  .table('Clients')
+  .table("Clients")
   .create([
-    { CompanyName: 'Acme Corp', Industry: 'Tech' },
-    { CompanyName: 'Globex Inc', Industry: 'Manufacturing' }
+    { CompanyName: "Acme Corp", Industry: "Tech" },
+    { CompanyName: "Globex Inc", Industry: "Manufacturing" },
   ]);
 
 // Update records (requires key field)
 const updated = await client
-  .table('Clients')
+  .table("Clients")
   .update([
-    { key: 'ID123', Status: 'Active' }
+    { key: "ID123", Status: "Active" },
   ]);
 
 // Upsert (create or update based on match column)
 const upserted = await client
-  .table('Contacts')
+  .table("Contacts")
   .upsert(
-    [{ Email: 'john@example.com', Name: 'John Doe' }],
-    'Email' // Match on Email column
+    [{ Email: "john@example.com", Name: "John Doe" }],
+    "Email", // Match on Email column
   );
 
 // Disable workflow triggers
 const results = await client
-  .table('Clients')
+  .table("Clients")
   .create(
-    [{ CompanyName: 'Test Corp' }],
-    { workflow: false } // Won't trigger TeamDesk workflow rules
+    [{ CompanyName: "Test Corp" }],
+    { workflow: false }, // Won't trigger TeamDesk workflow rules
   );
 ```
 
@@ -194,23 +196,27 @@ const results = await client
 TeDasuke provides rich error context:
 
 ```typescript
-import { TeamDeskError, AuthenticationError, ValidationError } from "jsr:@rick/tedasuke";
+import {
+  AuthenticationError,
+  TeamDeskError,
+  ValidationError,
+} from "jsr:@rick/tedasuke";
 
 try {
   const data = await client
-    .table('Orders')
+    .table("Orders")
     .select()
     .execute();
 } catch (error) {
   if (error instanceof AuthenticationError) {
-    console.error('Authentication failed:', error.message);
+    console.error("Authentication failed:", error.message);
   } else if (error instanceof ValidationError) {
-    console.error('Validation error:', error.message);
-    console.error('Details:', error.details);
+    console.error("Validation error:", error.message);
+    console.error("Details:", error.details);
   } else if (error instanceof TeamDeskError) {
-    console.error('TeamDesk error:', error.message);
-    console.error('Status:', error.status);
-    console.error('URL:', error.url);
+    console.error("TeamDesk error:", error.message);
+    console.error("Status:", error.status);
+    console.error("URL:", error.url);
   }
 }
 ```
@@ -226,25 +232,25 @@ import { TeamDeskClient } from "jsr:@rick/tedasuke";
 const td = new TeamDeskClient({
   appId: 15331,
   token: Deno.env.get("API_KEY_01")!,
-  baseUrl: "https://pro.dbflex.net/secure/api/v2"
+  baseUrl: "https://pro.dbflex.net/secure/api/v2",
 });
 
 // These exports become available in your Lume templates
 export const holidays = await td
-  .table('Work Holiday')
-  .view('API Holidays Today or Later')
+  .table("Work Holiday")
+  .view("API Holidays Today or Later")
   .select()
   .execute();
 
 export const projects = await td
-  .table('Web Project')
-  .view('API List All')
+  .table("Web Project")
+  .view("API List All")
   .select()
   .limit(3)
   .execute();
 
 export const contacts = await td
-  .table('Web Japan Contact and App')
+  .table("Web Japan Contact and App")
   .select()
   .execute();
 ```
@@ -256,6 +262,7 @@ export const contacts = await td
 Main client class for interacting with TeamDesk.
 
 **Constructor options:**
+
 - `appId` (string | number) - Your TeamDesk application ID
 - `token` (string) - API token (preferred authentication method)
 - `user` (string) - Username for basic auth (alternative to token)
@@ -264,6 +271,7 @@ Main client class for interacting with TeamDesk.
 - `debug` (boolean) - Enable debug logging (optional)
 
 **Methods:**
+
 - `table<T>(tableName: string)` - Get a TableClient for the specified table
 - `describe()` - Get database schema information
 
@@ -272,6 +280,7 @@ Main client class for interacting with TeamDesk.
 Client for a specific table.
 
 **Methods:**
+
 - `select(columns?: string[])` - Start building a SELECT query
 - `view(viewName: string)` - Access a view on this table
 - `create(records, options?)` - Create new records
@@ -284,6 +293,7 @@ Client for a specific table.
 Fluent query builder for SELECT operations.
 
 **Methods:**
+
 - `filter(expression: string)` - Add a filter (TeamDesk formula language)
 - `sort(column: string, direction?: 'ASC' | 'DESC')` - Add sorting
 - `limit(n: number)` - Limit results (max 500)
@@ -296,6 +306,7 @@ Fluent query builder for SELECT operations.
 Client for a specific view.
 
 **Methods:**
+
 - `select(columns?: string[])` - Start building a query on this view
 
 ## TeamDesk Filter Language
@@ -336,19 +347,21 @@ TeDasuke uses TeamDesk's formula language for filters. Here are some examples:
 TeDasuke supports two authentication methods:
 
 **Token-based (recommended):**
+
 ```typescript
 const client = new TeamDeskClient({
   appId: 15331,
-  token: 'your-api-token'
+  token: "your-api-token",
 });
 ```
 
 **Basic auth:**
+
 ```typescript
 const client = new TeamDeskClient({
   appId: 15331,
-  user: 'username',
-  password: 'password'
+  user: "username",
+  password: "password",
 });
 ```
 
@@ -359,8 +372,8 @@ For DBFlex or custom installations:
 ```typescript
 const client = new TeamDeskClient({
   appId: 15331,
-  token: 'your-token',
-  baseUrl: 'https://pro.dbflex.net/secure/api/v2'
+  token: "your-token",
+  baseUrl: "https://pro.dbflex.net/secure/api/v2",
 });
 ```
 
@@ -371,8 +384,8 @@ Enable debug logging to see all API requests:
 ```typescript
 const client = new TeamDeskClient({
   appId: 15331,
-  token: 'your-token',
-  debug: true
+  token: "your-token",
+  debug: true,
 });
 ```
 
@@ -432,6 +445,7 @@ Contributions welcome! Please open an issue or PR on GitHub.
 
 ## Credits
 
-Built by Rick Cogley for use with Lume SSG, but designed as a general-purpose TeamDesk client library.
+Built by Rick Cogley for use with Lume SSG, but designed as a general-purpose
+TeamDesk client library.
 
 TeamDesk is a product of ForeSoft Corporation.

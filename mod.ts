@@ -55,6 +55,15 @@ export {
   ValidationError,
 } from "./src/errors.ts";
 
+// Export cache utilities
+export {
+  clearCache,
+  fetchWithCache,
+  getCacheInfo,
+  loadFromCache,
+  saveToCache,
+} from "./src/cache.ts";
+
 // Export types
 export type {
   ApiError,

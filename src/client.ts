@@ -186,7 +186,12 @@ export class TeamDeskClient {
     try {
       body = await response.json();
     } catch {
-      body = await response.text();
+      try {
+        // Try text if JSON parsing failed
+        body = await response.text();
+      } catch {
+        body = `HTTP ${response.status} ${response.statusText}`;
+      }
     }
 
     const { message, errors } = parseErrorResponse(body);
