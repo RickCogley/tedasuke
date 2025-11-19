@@ -19,23 +19,23 @@ A fluent, type-safe TypeScript client library for the TeamDesk/DBFlex REST API.
 ### Deno
 
 ```typescript
-import { TeamDeskClient } from "jsr:@rcogley/tedasuke";
+import { TeamDeskClient } from "jsr:@rick/tedasuke";
 ```
 
 ### Node.js (via JSR)
 
 ```bash
-npx jsr add @rcogley/tedasuke
+npx jsr add @rick/tedasuke
 ```
 
 ```typescript
-import { TeamDeskClient } from "@rcogley/tedasuke";
+import { TeamDeskClient } from "@rick/tedasuke";
 ```
 
 ## Quick Start
 
 ```typescript
-import { TeamDeskClient } from "jsr:@rcogley/tedasuke";
+import { TeamDeskClient } from "jsr:@rick/tedasuke";
 
 // Create a client
 const client = new TeamDeskClient({
@@ -194,7 +194,7 @@ const results = await client
 TeDasuke provides rich error context:
 
 ```typescript
-import { TeamDeskError, AuthenticationError, ValidationError } from "jsr:@rcogley/tedasuke";
+import { TeamDeskError, AuthenticationError, ValidationError } from "jsr:@rick/tedasuke";
 
 try {
   const data = await client
@@ -221,7 +221,7 @@ Perfect for static site generation with Lume:
 
 ```typescript
 // In your _data/prodb.ts file
-import { TeamDeskClient } from "jsr:@rcogley/tedasuke";
+import { TeamDeskClient } from "jsr:@rick/tedasuke";
 
 const td = new TeamDeskClient({
   appId: 15331,

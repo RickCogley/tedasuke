@@ -6,7 +6,7 @@
  *
  * @example
  * ```typescript
- * import { TeamDeskClient } from "jsr:@rcogley/tedasuke";
+ * import { TeamDeskClient } from "jsr:@rick/tedasuke";
  *
  * const client = new TeamDeskClient({
  *   appId: 15331,
