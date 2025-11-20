@@ -160,12 +160,21 @@ for await (const batch of client.table("Orders").select().selectAll()) {
 
 ```typescript
 // Create records
-const newClients = await client
+const results = await client
   .table("Clients")
   .create([
     { CompanyName: "Acme Corp", Industry: "Tech" },
     { CompanyName: "Globex Inc", Industry: "Manufacturing" },
   ]);
+
+// Check results
+results.forEach((result) => {
+  if (result.success) {
+    console.log(`Created record ${result.id} with key ${result.key}`);
+  } else {
+    console.error(`Failed: ${result.errors}`);
+  }
+});
 
 // Update records (requires key field)
 const updated = await client
@@ -182,6 +191,13 @@ const upserted = await client
     "Email", // Match on Email column
   );
 
+// Check if record was created or updated
+upserted.forEach((result) => {
+  if (result.success) {
+    console.log(`${result.action} record ${result.id}`); // "created" or "updated"
+  }
+});
+
 // Disable workflow triggers
 const results = await client
   .table("Clients")
@@ -189,6 +205,47 @@ const results = await client
     [{ CompanyName: "Test Corp" }],
     { workflow: false }, // Won't trigger TeamDesk workflow rules
   );
+```
+
+#### Write Operation Results
+
+All write operations (`create`, `update`, `upsert`) return result objects with the following properties:
+
+```typescript
+interface CreateResult<T> {
+  success: boolean;    // true if HTTP status 200-299
+  status: number;      // HTTP status code (200, 201, etc.)
+  data: Partial<T>;    // The record data
+  id?: number;         // Row ID of the record
+  key?: string;        // Key value of the record
+  errors: ApiError[];  // Any errors that occurred
+}
+
+interface UpsertResult<T> extends CreateResult<T> {
+  action: "created" | "updated"; // Whether record was created or updated
+}
+```
+
+Example usage:
+
+```typescript
+const results = await client.table("Web Lead").upsert([
+  {
+    f_1655786: "John",
+    f_1655792: "Doe",
+    f_1655893: "john@example.com",
+  },
+]);
+
+const result = results[0];
+
+if (result.success) {
+  console.log(`Success! Record ${result.action} with ID: ${result.id}`);
+  // Redirect to success page, etc.
+} else {
+  console.error("Failed:", result.errors);
+  // Show error message to user
+}
 ```
 
 ### Error Handling
@@ -354,10 +411,10 @@ Client for a specific table.
 
 - `select(columns?: string[])` - Start building a SELECT query
 - `view(viewName: string)` - Access a view on this table
-- `create(records, options?)` - Create new records
-- `update(records, options?)` - Update existing records
-- `upsert(records, matchColumn, options?)` - Create or update records
-- `delete(key, options?)` - Delete a record
+- `create(records, options?)` - Create new records, returns `CreateResult<T>[]`
+- `update(records, options?)` - Update existing records, returns `UpdateResult<T>[]`
+- `upsert(records, matchColumn?, options?)` - Create or update records, returns `UpsertResult<T>[]`
+- `delete(key, options?)` - Delete a record, returns `DeleteResult`
 
 ### `SelectBuilder<T>`
 
