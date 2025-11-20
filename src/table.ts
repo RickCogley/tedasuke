@@ -3,7 +3,14 @@
  * Fluent interface for TeamDesk table operations
  */
 
-import type { SelectOptions, TeamDeskRecord, WriteOptions } from "./types.ts";
+import type {
+  CreateResult,
+  SelectOptions,
+  TeamDeskRecord,
+  UpdateResult,
+  UpsertResult,
+  WriteOptions,
+} from "./types.ts";
 import type { TeamDeskClient } from "./client.ts";
 import {
   buildQueryString,
@@ -69,7 +76,7 @@ export class TableClient<T extends TeamDeskRecord = TeamDeskRecord> {
    *
    * @param records - Array of records to create
    * @param options - Write options (workflow, etc.)
-   * @returns Array of created records
+   * @returns Array of create results
    *
    * @example
    * ```typescript
@@ -83,7 +90,7 @@ export class TableClient<T extends TeamDeskRecord = TeamDeskRecord> {
   public async create(
     records: Partial<T>[],
     options?: WriteOptions,
-  ): Promise<T[]> {
+  ): Promise<CreateResult<T>[]> {
     const encodedTable = encodeTableName(this.tableName);
     const queryParams = buildQueryString({
       workflow: options?.workflow !== false ? 1 : 0,
@@ -92,10 +99,21 @@ export class TableClient<T extends TeamDeskRecord = TeamDeskRecord> {
       `${encodedTable}/create.json${queryParams}`,
     );
 
-    return await this.client.request<T[]>(url, {
+    const rawResults = await this.client.request<
+      Array<{ status: number; id?: number; key?: string }>
+    >(url, {
       method: "POST",
       body: JSON.stringify(records),
     });
+
+    return rawResults.map((result) => ({
+      success: result.status >= 200 && result.status < 300,
+      status: result.status,
+      data: {} as Partial<T>,
+      id: result.id,
+      key: result.key,
+      errors: [],
+    }));
   }
 
   /**
@@ -103,7 +121,7 @@ export class TableClient<T extends TeamDeskRecord = TeamDeskRecord> {
    *
    * @param records - Array of records to update (must include key field)
    * @param options - Write options (workflow, etc.)
-   * @returns Array of updated records
+   * @returns Array of update results
    *
    * @example
    * ```typescript
@@ -117,7 +135,7 @@ export class TableClient<T extends TeamDeskRecord = TeamDeskRecord> {
   public async update(
     records: Partial<T>[],
     options?: WriteOptions,
-  ): Promise<T[]> {
+  ): Promise<UpdateResult<T>[]> {
     const encodedTable = encodeTableName(this.tableName);
     const queryParams = buildQueryString({
       workflow: options?.workflow !== false ? 1 : 0,
@@ -126,19 +144,30 @@ export class TableClient<T extends TeamDeskRecord = TeamDeskRecord> {
       `${encodedTable}/update.json${queryParams}`,
     );
 
-    return await this.client.request<T[]>(url, {
+    const rawResults = await this.client.request<
+      Array<{ status: number; id?: number; key?: string }>
+    >(url, {
       method: "POST",
       body: JSON.stringify(records),
     });
+
+    return rawResults.map((result) => ({
+      success: result.status >= 200 && result.status < 300,
+      status: result.status,
+      data: {} as Partial<T>,
+      id: result.id,
+      key: result.key,
+      errors: [],
+    }));
   }
 
   /**
    * Upsert records (create or update based on match column)
    *
    * @param records - Array of records to upsert
-   * @param matchColumn - Column to match on for determining create vs update
+   * @param matchColumn - Column to match on for determining create vs update (optional, defaults to key column)
    * @param options - Write options (workflow, etc.)
-   * @returns Array of upserted records
+   * @returns Array of upsert results
    *
    * @example
    * ```typescript
@@ -152,22 +181,34 @@ export class TableClient<T extends TeamDeskRecord = TeamDeskRecord> {
    */
   public async upsert(
     records: Partial<T>[],
-    matchColumn: string,
+    matchColumn?: string,
     options?: WriteOptions,
-  ): Promise<T[]> {
+  ): Promise<UpsertResult<T>[]> {
     const encodedTable = encodeTableName(this.tableName);
     const queryParams = buildQueryString({
-      match: matchColumn,
+      ...(matchColumn && { match: matchColumn }),
       workflow: options?.workflow !== false ? 1 : 0,
     });
     const url = this.client.buildUrl(
       `${encodedTable}/upsert.json${queryParams}`,
     );
 
-    return await this.client.request<T[]>(url, {
+    const rawResults = await this.client.request<
+      Array<{ status: number; id?: number; key?: string }>
+    >(url, {
       method: "POST",
       body: JSON.stringify(records),
     });
+
+    return rawResults.map((result) => ({
+      success: result.status >= 200 && result.status < 300,
+      status: result.status,
+      data: {} as Partial<T>,
+      action: result.status === 201 ? "created" : "updated",
+      id: result.id,
+      key: result.key,
+      errors: [],
+    }));
   }
 }
 
