@@ -209,16 +209,17 @@ const results = await client
 
 #### Write Operation Results
 
-All write operations (`create`, `update`, `upsert`) return result objects with the following properties:
+All write operations (`create`, `update`, `upsert`) return result objects with
+the following properties:
 
 ```typescript
 interface CreateResult<T> {
-  success: boolean;    // true if HTTP status 200-299
-  status: number;      // HTTP status code (200, 201, etc.)
-  data: Partial<T>;    // The record data
-  id?: number;         // Row ID of the record
-  key?: string;        // Key value of the record
-  errors: ApiError[];  // Any errors that occurred
+  success: boolean; // true if HTTP status 200-299
+  status: number; // HTTP status code (200, 201, etc.)
+  data: Partial<T>; // The record data
+  id?: number; // Row ID of the record
+  key?: string; // Key value of the record
+  errors: ApiError[]; // Any errors that occurred
 }
 
 interface UpsertResult<T> extends CreateResult<T> {
@@ -412,8 +413,10 @@ Client for a specific table.
 - `select(columns?: string[])` - Start building a SELECT query
 - `view(viewName: string)` - Access a view on this table
 - `create(records, options?)` - Create new records, returns `CreateResult<T>[]`
-- `update(records, options?)` - Update existing records, returns `UpdateResult<T>[]`
-- `upsert(records, matchColumn?, options?)` - Create or update records, returns `UpsertResult<T>[]`
+- `update(records, options?)` - Update existing records, returns
+  `UpdateResult<T>[]`
+- `upsert(records, matchColumn?, options?)` - Create or update records, returns
+  `UpsertResult<T>[]`
 - `delete(key, options?)` - Delete a record, returns `DeleteResult`
 
 ### `SelectBuilder<T>`

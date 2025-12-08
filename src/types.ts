@@ -25,6 +25,13 @@ export interface TeamDeskConfig {
   cacheDir?: string | null | false;
   /** Enable debug logging */
   debug?: boolean;
+  /**
+   * Use Bearer token authentication instead of URL-based auth
+   * When true, token is sent as "Authorization: Bearer {token}" header
+   * instead of being included in the URL path (prevents token exposure in logs)
+   * InfoSec: Recommended for production environments
+   */
+  useBearerAuth?: boolean;
 }
 
 /**

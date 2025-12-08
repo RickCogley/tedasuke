@@ -39,7 +39,7 @@ import { parseErrorResponse } from "./utils.ts";
 export class TeamDeskClient {
   private config:
     & Required<
-      Pick<TeamDeskConfig, "appId" | "baseUrl" | "debug">
+      Pick<TeamDeskConfig, "appId" | "baseUrl" | "debug" | "useBearerAuth">
     >
     & Pick<TeamDeskConfig, "token" | "user" | "password">
     & {
@@ -55,6 +55,13 @@ export class TeamDeskClient {
     if (!config.token && !(config.user && config.password)) {
       throw new Error(
         "Either token or both user and password must be provided",
+      );
+    }
+
+    // InfoSec: Validate Bearer auth requires token
+    if (config.useBearerAuth && !config.token) {
+      throw new Error(
+        "useBearerAuth requires token to be provided (user/password not supported with Bearer auth)",
       );
     }
 
@@ -76,6 +83,7 @@ export class TeamDeskClient {
       appId: String(config.appId),
       baseUrl: config.baseUrl || "https://www.teamdesk.net/secure/api/v2",
       debug: config.debug ?? false,
+      useBearerAuth: config.useBearerAuth ?? false,
       token: config.token,
       user: config.user,
       password: config.password,
@@ -132,17 +140,23 @@ export class TeamDeskClient {
 
   /**
    * Build a complete API URL from a path
-   * Handles authentication segment
+   * Handles authentication segment (unless using Bearer auth)
    *
    * @internal
    */
   public buildUrl(path: string): string {
+    // Remove leading slash from path if present
+    const cleanPath = path.startsWith("/") ? path.slice(1) : path;
+
+    // InfoSec: When using Bearer auth, don't include token in URL
+    if (this.config.useBearerAuth) {
+      return `${this.config.baseUrl}/${this.config.appId}/${cleanPath}`;
+    }
+
+    // Traditional URL-based auth
     const authSegment = this.config.token
       ? this.config.token
       : `${this.config.user}:${this.config.password}`;
-
-    // Remove leading slash from path if present
-    const cleanPath = path.startsWith("/") ? path.slice(1) : path;
 
     return `${this.config.baseUrl}/${this.config.appId}/${authSegment}/${cleanPath}`;
   }
@@ -160,14 +174,22 @@ export class TeamDeskClient {
       console.log(`[TeDasuke] ${options.method || "GET"} ${url}`);
     }
 
+    // InfoSec: Build headers with Bearer token if enabled
+    const headers: Record<string, string> = {
+      "Accept": "application/json",
+      "Content-Type": "application/json",
+      ...(options.headers as Record<string, string> || {}),
+    };
+
+    // InfoSec: Add Bearer token authentication header
+    if (this.config.useBearerAuth && this.config.token) {
+      headers["Authorization"] = `Bearer ${this.config.token}`;
+    }
+
     try {
       const response = await fetch(url, {
         ...options,
-        headers: {
-          "Accept": "application/json",
-          "Content-Type": "application/json",
-          ...options.headers,
-        },
+        headers,
       });
 
       // Handle different status codes
