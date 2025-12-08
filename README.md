@@ -74,14 +74,15 @@ const orders = await client
   .select(["OrderID", "Total", "CustomerName"])
   .execute();
 
-// With filtering
+// Filtering with TeamDesk formula syntax
+// See: https://www.teamdesk.net/help/working-with-formulas/
 const activeOrders = await client
   .table("Orders")
   .select()
   .filter('[Status]="Active" and [Total]>1000')
   .execute();
 
-// With sorting
+// Sorting (URL: ?sort=OrderDate//DESC)
 const recentOrders = await client
   .table("Orders")
   .select()
@@ -89,12 +90,20 @@ const recentOrders = await client
   .limit(50)
   .execute();
 
-// Pagination
+// Sort by column with spaces (URL: ?sort=Last%20Modified//DESC)
+const recentlyModified = await client
+  .table("Records")
+  .select()
+  .sort("Last Modified", "DESC")
+  .limit(100)
+  .execute();
+
+// Pagination (URL: ?skip=100&top=100)
 const page2 = await client
   .table("Orders")
   .select()
-  .skip(100)
-  .limit(100)
+  .skip(100) // Skip first 100 records
+  .limit(100) // Return next 100 records
   .execute();
 ```
 
@@ -461,6 +470,49 @@ TeDasuke uses TeamDesk's formula language for filters. Here are some examples:
 .filter('IsBlank([ShippedDate])')
 .filter('Contains([Description], "urgent")')
 .filter('Year([Date])=2024')
+```
+
+## Query Parameters Reference
+
+TeDasuke methods map to TeamDesk/DBFlex REST API URL parameters:
+
+| Method                     | URL Parameter       | Example                       | Description                                                                            |
+| -------------------------- | ------------------- | ----------------------------- | -------------------------------------------------------------------------------------- |
+| `.limit(n)`                | `?top=n`            | `?top=100`                    | Limit results to n records (max 500)                                                   |
+| `.skip(n)`                 | `?skip=n`           | `?skip=100`                   | Skip first n records (for pagination)                                                  |
+| `.sort(column, direction)` | `?sort=Column//DIR` | `?sort=Last%20Modified//DESC` | Sort by column ASC or DESC                                                             |
+| `.filter(formula)`         | `?filter=...`       | `?filter=[Status]="Active"`   | Filter using [TeamDesk formulas](https://www.teamdesk.net/help/working-with-formulas/) |
+
+### Common Patterns
+
+```typescript
+// Get last 100 most recently modified records
+const recent = await client
+  .table("Records")
+  .select()
+  .sort("Last Modified", "DESC")
+  .limit(100)
+  .execute();
+// URL: /Records/select.json?sort=Last%20Modified//DESC&top=100
+
+// Pagination: Get page 3 (records 201-300)
+const page3 = await client
+  .table("Orders")
+  .select()
+  .skip(200)
+  .limit(100)
+  .execute();
+// URL: /Orders/select.json?skip=200&top=100
+
+// Complex filtering
+const filtered = await client
+  .table("Tasks")
+  .select()
+  .filter('[Priority]="High" and [Status]<>"Completed"')
+  .sort("Due Date", "ASC")
+  .limit(50)
+  .execute();
+// URL: /Tasks/select.json?filter=[Priority]="High" and [Status]<>"Completed"&sort=Due%20Date//ASC&top=50
 ```
 
 ## Error Types
