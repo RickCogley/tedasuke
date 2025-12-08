@@ -19,7 +19,8 @@
  *   // override for DBFlex or custom domains
  *   baseUrl: "https://my.dbflex.net/secure/api/v2",
  *   cacheDir: "./_tdcache", // optional, defaults to "./_tdcache", set to null to disable
- *   debug: false // optional
+ *   debug: false, // optional
+ *   useBearerAuth: true // optional, sends token as "Authorization: Bearer" header (recommended for security)
  * });
  *
  * // Simple query

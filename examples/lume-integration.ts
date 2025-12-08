@@ -20,6 +20,7 @@ const td = new TeamDeskClient({
   appId: 15331,
   token: apiKey,
   baseUrl: "https://pro.dbflex.net/secure/api/v2", // Using DBFlex URL
+  useBearerAuth: true, // Use Bearer token auth (recommended for security)
 });
 
 console.log("🔄 Fetching PROdb data for Lume...");

@@ -20,6 +20,7 @@ const td = new TeamDeskClient({
   token: apiKey,
   baseUrl: "https://pro.dbflex.net/secure/api/v2",
   debug: true, // Show API calls for verification
+  useBearerAuth: true, // Use Bearer token auth (recommended for security)
 });
 
 console.log("🔄 Testing TeDasuke against PROdb (App ID: 15331)\n");

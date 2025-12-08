@@ -24,6 +24,7 @@ const client = new TeamDeskClient({
   appId,
   token,
   debug: true, // Enable debug logging
+  useBearerAuth: true, // Use Bearer token auth (recommended for security)
 });
 
 console.log("🔄 TeDasuke Basic Usage Example\n");

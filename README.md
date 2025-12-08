@@ -42,6 +42,7 @@ import { TeamDeskClient } from "jsr:@rick/tedasuke";
 const client = new TeamDeskClient({
   appId: 12345,
   token: Deno.env.get("TD_TOKEN")!,
+  useBearerAuth: true, // Optional: use Bearer token auth (recommended for security)
 });
 
 // Fetch data with a fluent API
@@ -486,6 +487,21 @@ const client = new TeamDeskClient({
 });
 ```
 
+**Token-based with Bearer Auth (recommended for production):**
+
+```typescript
+const client = new TeamDeskClient({
+  appId: 12345,
+  token: "your-api-token",
+  useBearerAuth: true, // Sends token as "Authorization: Bearer" header
+});
+```
+
+When `useBearerAuth` is enabled, the token is sent as an `Authorization: Bearer`
+header instead of being included in the URL path. This prevents the token from
+appearing in server logs and is the recommended approach for production
+environments.
+
 **Basic auth:**
 
 ```typescript
@@ -495,6 +511,8 @@ const client = new TeamDeskClient({
   password: "password",
 });
 ```
+
+Note: Basic auth does not support `useBearerAuth` mode.
 
 ### Custom Base URL
 
