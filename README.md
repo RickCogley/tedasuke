@@ -182,15 +182,22 @@ results.forEach((result) => {
   if (result.success) {
     console.log(`Created record ${result.id} with key ${result.key}`);
   } else {
-    console.error(`Failed: ${result.errors}`);
+    console.error("Failed:", result.errors.map((e) => e.message).join("; "));
   }
 });
 
-// Update records (requires key field)
+// Update records by @row.id (preferred)
 const updated = await client
   .table("Clients")
   .update([
-    { key: "ID123", Status: "Active" },
+    { "@row.id": 123, Status: "Active" },
+  ]);
+
+// Update records by key (string — automatically converted to @row.id)
+const updated2 = await client
+  .table("Clients")
+  .update([
+    { key: "123", Status: "Active" },
   ]);
 
 // Upsert (create or update based on match column)
@@ -209,13 +216,19 @@ upserted.forEach((result) => {
 });
 
 // Disable workflow triggers
-const results = await client
+const quietResult = await client
   .table("Clients")
   .create(
     [{ CompanyName: "Test Corp" }],
     { workflow: false }, // Won't trigger TeamDesk workflow rules
   );
 ```
+
+> **Note on record identification:** The TeamDesk API uses `@row.id` (a numeric
+> internal ID) to identify records for updates. TeDasuke accepts either
+> `@row.id` (number) or `key` (string) — if you pass `key`, it is automatically
+> converted to a numeric `@row.id`. The `@row.id` value is returned in every
+> select query result.
 
 #### Write Operation Results
 
@@ -254,8 +267,11 @@ if (result.success) {
   console.log(`Success! Record ${result.action} with ID: ${result.id}`);
   // Redirect to success page, etc.
 } else {
-  console.error("Failed:", result.errors);
-  // Show error message to user
+  // errors is an array of { column?: string, message: string }
+  const messages = result.errors.map((e) =>
+    e.column ? `${e.column}: ${e.message}` : e.message
+  );
+  console.error("Failed:", messages.join("; "));
 }
 ```
 
@@ -423,8 +439,8 @@ Client for a specific table.
 - `select(columns?: string[])` - Start building a SELECT query
 - `view(viewName: string)` - Access a view on this table
 - `create(records, options?)` - Create new records, returns `CreateResult<T>[]`
-- `update(records, options?)` - Update existing records, returns
-  `UpdateResult<T>[]`
+- `update(records, options?)` - Update existing records (identify by `@row.id`
+  or `key`), returns `UpdateResult<T>[]`
 - `upsert(records, matchColumn?, options?)` - Create or update records, returns
   `UpsertResult<T>[]`
 - `delete(key, options?)` - Delete a record, returns `DeleteResult`
