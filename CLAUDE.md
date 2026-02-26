@@ -105,8 +105,11 @@ for await (const batch of client.table("Orders").select().selectAll()) {
 // Create
 await client.table("Clients").create([{ Name: "Acme" }]);
 
-// Update
-await client.table("Clients").update([{ key: "ID123", Status: "Active" }]);
+// Update (by @row.id — preferred)
+await client.table("Clients").update([{ "@row.id": 123, Status: "Active" }]);
+
+// Update (by key — converted to @row.id automatically)
+await client.table("Clients").update([{ key: "123", Status: "Active" }]);
 
 // Upsert
 await client.table("Contacts").upsert([{

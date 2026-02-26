@@ -17,8 +17,33 @@ import {
   encodeTableName,
   encodeViewName,
   formatSort,
+  normalizeWriteRecords,
   validatePaginationLimit,
 } from "./utils.ts";
+
+/** Raw result shape from TeamDesk write API responses */
+interface WriteRawResult {
+  status: number;
+  id?: number;
+  key?: string;
+  errors?: Array<{
+    error: number;
+    code: number;
+    source: string;
+    message: string;
+  }>;
+}
+
+/** Extract ApiError array from a raw write result */
+function extractErrors(
+  result: WriteRawResult,
+): Array<{ column?: string; message: string }> {
+  if (!result.errors || result.errors.length === 0) return [];
+  return result.errors.map((e) => ({
+    column: e.source || undefined,
+    message: e.message,
+  }));
+}
 
 /**
  * Client for interacting with a specific TeamDesk table
@@ -99,9 +124,7 @@ export class TableClient<T extends TeamDeskRecord = TeamDeskRecord> {
       `${encodedTable}/create.json${queryParams}`,
     );
 
-    const rawResults = await this.client.request<
-      Array<{ status: number; id?: number; key?: string }>
-    >(url, {
+    const rawResults = await this.client.request<WriteRawResult[]>(url, {
       method: "POST",
       body: JSON.stringify(records),
     });
@@ -112,14 +135,16 @@ export class TableClient<T extends TeamDeskRecord = TeamDeskRecord> {
       data: {} as Partial<T>,
       id: result.id,
       key: result.key,
-      errors: [],
+      errors: extractErrors(result),
     }));
   }
 
   /**
-   * Update existing records in this table
+   * Update existing records in this table.
+   * Each record must identify the row to update via `@row.id` (numeric)
+   * or `key` (string — will be converted to numeric `@row.id`).
    *
-   * @param records - Array of records to update (must include key field)
+   * @param records - Array of records to update (must include `@row.id` or `key`)
    * @param options - Write options (workflow, etc.)
    * @returns Array of update results
    *
@@ -128,7 +153,7 @@ export class TableClient<T extends TeamDeskRecord = TeamDeskRecord> {
    * const results = await client
    *   .table('Clients')
    *   .update([
-   *     { key: 'ID123', Status: 'Active' }
+   *     { '@row.id': 123, Status: 'Active' }
    *   ]);
    * ```
    */
@@ -144,11 +169,9 @@ export class TableClient<T extends TeamDeskRecord = TeamDeskRecord> {
       `${encodedTable}/update.json${queryParams}`,
     );
 
-    const rawResults = await this.client.request<
-      Array<{ status: number; id?: number; key?: string }>
-    >(url, {
+    const rawResults = await this.client.request<WriteRawResult[]>(url, {
       method: "POST",
-      body: JSON.stringify(records),
+      body: JSON.stringify(normalizeWriteRecords(records)),
     });
 
     return rawResults.map((result) => ({
@@ -157,7 +180,7 @@ export class TableClient<T extends TeamDeskRecord = TeamDeskRecord> {
       data: {} as Partial<T>,
       id: result.id,
       key: result.key,
-      errors: [],
+      errors: extractErrors(result),
     }));
   }
 
@@ -193,11 +216,9 @@ export class TableClient<T extends TeamDeskRecord = TeamDeskRecord> {
       `${encodedTable}/upsert.json${queryParams}`,
     );
 
-    const rawResults = await this.client.request<
-      Array<{ status: number; id?: number; key?: string }>
-    >(url, {
+    const rawResults = await this.client.request<WriteRawResult[]>(url, {
       method: "POST",
-      body: JSON.stringify(records),
+      body: JSON.stringify(normalizeWriteRecords(records)),
     });
 
     return rawResults.map((result) => ({
@@ -207,7 +228,7 @@ export class TableClient<T extends TeamDeskRecord = TeamDeskRecord> {
       action: result.status === 201 ? "created" : "updated",
       id: result.id,
       key: result.key,
-      errors: [],
+      errors: extractErrors(result),
     }));
   }
 }

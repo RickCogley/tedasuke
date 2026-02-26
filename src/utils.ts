@@ -73,6 +73,34 @@ export function validatePaginationLimit(limit: number): number {
 }
 
 /**
+ * Normalize records for write operations (update/upsert).
+ * Converts the user-friendly `key` field to the API-required `@row.id`.
+ *
+ * TeamDesk's REST API identifies records by `@row.id` (numeric), but
+ * users may pass a `key` field (string). This function handles:
+ * - Records with `key` → converted to `@row.id` (numeric)
+ * - Records already using `@row.id` → passed through unchanged
+ * - Records with neither → passed through as-is (e.g., upsert by match column)
+ */
+export function normalizeWriteRecords(
+  records: Array<Record<string, unknown>>,
+): Array<Record<string, unknown>> {
+  return records.map((rec) => {
+    // Already has @row.id — pass through
+    if ("@row.id" in rec) return rec;
+
+    // Has key — convert to @row.id
+    if ("key" in rec) {
+      const { key, ...rest } = rec;
+      return { "@row.id": Number(key), ...rest };
+    }
+
+    // Neither — pass through (upsert by match column doesn't need row ID)
+    return rec;
+  });
+}
+
+/**
  * Parse TeamDesk error response
  * TeamDesk returns errors in a specific format
  */
