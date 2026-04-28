@@ -8,8 +8,16 @@
     "check": "deno check **/*.ts",
     "lint": "deno lint",
     "fmt": "deno fmt",
-    "preflight": "deno fmt && deno check **/*.ts && deno lint",
-    "publish": "deno publish --dry-run"
+    "preflight": "deno fmt && deno check **/*.ts && deno lint && deno test --allow-net --allow-env",
+    "publish:dry": "deno publish --dry-run"
+  },
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictPropertyInitialization": true
   },
   "fmt": {
     "semiColons": true,
@@ -17,16 +25,23 @@
   },
   "lint": {
     "rules": {
-      "tags": ["recommended"]
+      "tags": ["recommended"],
+      "include": [
+        "eqeqeq",
+        "no-eval",
+        "no-throw-literal"
+      ]
     }
   },
   "publish": {
     "exclude": [
       ".git",
       ".github",
+      ".claude",
       "examples",
       "tests",
-      "docs"
+      "docs",
+      "CLAUDE.md"
     ]
   }
 }
