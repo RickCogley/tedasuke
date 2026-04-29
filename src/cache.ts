@@ -1,6 +1,45 @@
 /**
- * TeDasuke - Cache utilities
- * Helper functions for caching API responses to disk
+ * # TeDasuke — Filesystem cache (Deno only)
+ *
+ * Helpers that persist API responses to disk so static-site builds can fall
+ * back to the last-known-good data when the API is temporarily unavailable.
+ *
+ * ## Runtime
+ *
+ * **Deno only.** All functions in this module use `Deno.mkdir`,
+ * `Deno.writeTextFile`, `Deno.readTextFile`, `Deno.stat`, and `Deno.remove`.
+ * They will throw `ReferenceError: Deno is not defined` on Node, Bun,
+ * Cloudflare Workers, and in browsers.
+ *
+ * The main `@rick/tedasuke` entry deliberately does not re-export from here,
+ * so non-Deno consumers can use the client without ever pulling in this file.
+ *
+ * ## Installation
+ *
+ * ```bash
+ * deno add jsr:@rick/tedasuke jsr:@rick/tedasuke/cache
+ * ```
+ *
+ * ## Usage
+ *
+ * ```typescript
+ * import { TeamDeskClient } from "@rick/tedasuke";
+ * import { fetchWithCache } from "@rick/tedasuke/cache";
+ *
+ * const client = new TeamDeskClient({
+ *   appId: 12345,
+ *   token: Deno.env.get("TD_TOKEN")!,
+ *   cacheDir: "./_tdcache",
+ * });
+ *
+ * const result = await fetchWithCache(
+ *   client,
+ *   "orders",
+ *   () => client.table("Orders").select().execute(),
+ * );
+ * ```
+ *
+ * @module
  */
 
 import type { TeamDeskClient } from "./client.ts";

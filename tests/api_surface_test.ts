@@ -1,13 +1,8 @@
 import { assertEquals, assertExists } from "jsr:@std/assert@1";
 import {
   AuthenticationError,
-  clearCache,
-  fetchWithCache,
-  getCacheInfo,
-  loadFromCache,
   NotFoundError,
   RateLimitError,
-  saveToCache,
   ServerError,
   TableClient,
   TeamDeskClient,
@@ -15,6 +10,13 @@ import {
   ValidationError,
   ViewClient,
 } from "../mod.ts";
+import {
+  clearCache,
+  fetchWithCache,
+  getCacheInfo,
+  loadFromCache,
+  saveToCache,
+} from "../src/cache.ts";
 
 Deno.test("public API surface — main entry exports are present", () => {
   assertExists(TeamDeskClient);
@@ -26,10 +28,26 @@ Deno.test("public API surface — main entry exports are present", () => {
   assertExists(RateLimitError);
   assertExists(ServerError);
   assertExists(ValidationError);
+});
+
+Deno.test("public API surface — main entry does NOT export cache helpers", async () => {
+  const main = await import("../mod.ts");
+  assertEquals(
+    "fetchWithCache" in main,
+    false,
+    "fetchWithCache must live in @rick/tedasuke/cache, not the main entry",
+  );
+  assertEquals("saveToCache" in main, false);
+  assertEquals("loadFromCache" in main, false);
+  assertEquals("getCacheInfo" in main, false);
+  assertEquals("clearCache" in main, false);
+});
+
+Deno.test("cache entry — exports are present", () => {
   assertExists(fetchWithCache);
-  assertExists(getCacheInfo);
   assertExists(saveToCache);
   assertExists(loadFromCache);
+  assertExists(getCacheInfo);
   assertExists(clearCache);
 });
 

@@ -3,30 +3,54 @@
 ## Overview
 
 TeDasuke (手助け - "helping hand") is a fluent, type-safe TypeScript library for
-the Foresoft TeamDesk (aka dbFLEX) REST API, designed to be published on JSR.
+the Foresoft TeamDesk (aka dbFLEX) REST API, published on JSR.
+
+## Runtime portability
+
+The package has two entry points:
+
+- `@rick/tedasuke` — main entry. `fetch()` and Web APIs only. Runs on Deno, Node
+  ≥ 18, Bun, and Cloudflare Workers. Browsers work in principle but TeamDesk's
+  REST API typically blocks CORS.
+- `@rick/tedasuke/cache` — Deno-only filesystem cache for build resilience (used
+  by Lume / static-site generators). Uses `Deno.mkdir`, `Deno.writeTextFile`,
+  etc. — would throw `ReferenceError: Deno is not
+  defined` on other runtimes.
+
+The cache module is **not re-exported** from the main entry, so non-Deno
+consumers can use the client without the bundler ever pulling in the FS code.
+When adding new code to `src/`:
+
+- New runtime-agnostic features → re-export from `mod.ts`.
+- New Deno-specific features → add a sibling file under `src/` and create a new
+  export entry in `deno.json` (e.g. `"./fs": "./src/fs.ts"`).
 
 ## Project Structure
 
 ```
 tedasuke/
-├── mod.ts                   # Main entry point (exports all public APIs)
-├── deno.json               # Deno + JSR configuration (single source of truth)
+├── mod.ts                   # Main entry — runtime-agnostic exports
+├── deno.json               # Deno + JSR configuration; declares two entries:
+│                           #   "."      → ./mod.ts        (universal)
+│                           #   "./cache" → ./src/cache.ts (Deno-only)
 ├── README.md               # Comprehensive documentation
 ├── CLAUDE.md               # This file - project context
 │
 ├── .github/
 │   ├── workflows/
-│   │   ├── ci.yml                    # PR/main: fmt, lint, check, test, publish dry-run
-│   │   ├── publish.yml               # Tag push (v*): publish to JSR
-│   │   └── secrets-and-sast.yml      # Calls eSolia/devkit reusable security workflow
-│   └── dependabot.yml                # Weekly github-actions updates
+│   │   ├── ci.yml                       # PR/main: fmt, lint, check, test, publish dry-run
+│   │   ├── publish.yml                  # Tag push (v*): publish to JSR
+│   │   ├── security.yml                 # Wrapper triggering secrets-and-sast-vendored.yml
+│   │   └── secrets-and-sast-vendored.yml # Vendored from eSolia/devkit (private repo;
+│   │                                     # cross-org reusable workflow blocked, so vendored)
+│   └── dependabot.yml                   # Weekly github-actions updates
 │
 ├── .claude/
 │   └── rules/
 │       └── change-management.md      # ISO 27001 issue-branch-PR-merge-verify workflow
 │
 ├── src/
-│   ├── cache.ts          # fetchWithCache fallback for build resilience
+│   ├── cache.ts          # Deno-only — exposed as @rick/tedasuke/cache
 │   ├── client.ts          # TeamDeskClient - main API client
 │   ├── table.ts           # TableClient, ViewClient, SelectBuilder
 │   ├── types.ts           # TypeScript type definitions
