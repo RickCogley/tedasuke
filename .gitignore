@@ -18,8 +18,8 @@
 !deno.lock
 
 # Override global gitignore_global pattern `*secret*` so we can commit
-# the security workflow file by that name.
-!.github/workflows/secrets-and-sast.yml
+# files with "secret" in their name (e.g. CI workflows).
+!.github/workflows/*secret*
 
 # Build artifacts
 coverage/
