@@ -10,12 +10,23 @@ the Foresoft TeamDesk (aka dbFLEX) REST API, designed to be published on JSR.
 ```
 tedasuke/
 ├── mod.ts                   # Main entry point (exports all public APIs)
-├── deno.json               # Deno configuration with tasks
-├── jsr.json                # JSR package configuration
+├── deno.json               # Deno + JSR configuration (single source of truth)
 ├── README.md               # Comprehensive documentation
 ├── CLAUDE.md               # This file - project context
 │
+├── .github/
+│   ├── workflows/
+│   │   ├── ci.yml                    # PR/main: fmt, lint, check, test, publish dry-run
+│   │   ├── publish.yml               # Tag push (v*): publish to JSR
+│   │   └── secrets-and-sast.yml      # Calls eSolia/devkit reusable security workflow
+│   └── dependabot.yml                # Weekly github-actions updates
+│
+├── .claude/
+│   └── rules/
+│       └── change-management.md      # ISO 27001 issue-branch-PR-merge-verify workflow
+│
 ├── src/
+│   ├── cache.ts          # fetchWithCache fallback for build resilience
 │   ├── client.ts          # TeamDeskClient - main API client
 │   ├── table.ts           # TableClient, ViewClient, SelectBuilder
 │   ├── types.ts           # TypeScript type definitions
@@ -24,7 +35,8 @@ tedasuke/
 │
 ├── examples/
 │   ├── basic-usage.ts     # Simple demonstration
-│   └── lume-integration.ts # Lume SSG use case example
+│   ├── lume-integration.ts # Lume SSG use case example
+│   └── test-prodb.ts      # Production DB smoke test
 │
 ├── docs/
 │   └── teamdesk-client-kickoff.md # Original design document
@@ -157,8 +169,8 @@ deno task lint
 # Format
 deno task fmt
 
-# Publish (dry-run)
-deno task publish
+# Publish (dry-run — real publish runs in publish.yml on tag push)
+deno task publish:dry
 ```
 
 ## Code Style

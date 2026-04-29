@@ -1,0 +1,33 @@
+# macOS
+.DS_Store
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Claude Code local-only settings
+.claude/settings.local.json
+
+# Deno
+.deno/
+
+# Override global gitignore_global which ignores deno.lock —
+# JSR-published libraries should commit their lockfile for reproducibility.
+!deno.lock
+
+# Override global gitignore_global pattern `*secret*` so we can commit
+# files with "secret" in their name (e.g. CI workflows).
+!.github/workflows/*secret*
+
+# Build artifacts
+coverage/
+*.lcov
+
+# Cache used by tedasuke's own fetchWithCache
+_tdcache/
+
+# Environment files
+.env
+.env.local
