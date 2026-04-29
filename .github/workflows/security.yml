@@ -1,0 +1,30 @@
+# Security Scanning — wrapper that triggers the vendored secrets-and-sast workflow.
+#
+# Vendored workflow lives at .github/workflows/secrets-and-sast-vendored.yml.
+# Wrapper exists because the vendored file is `on: workflow_call` only — this
+# wrapper provides the actual triggers and forwards inputs.
+
+name: Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Weekly on Sunday at 00:00 UTC
+    - cron: "0 0 * * 0"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    name: Secrets & SAST
+    uses: ./.github/workflows/secrets-and-sast-vendored.yml
+    with:
+      source-paths: "mod.ts src"
+      run-sbom: true
+    secrets:
+      SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}

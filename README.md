@@ -9,21 +9,56 @@ this library provides for working with the TeamDesk API.
 
 - 🎯 **Fluent API** - Chainable methods that read like English
 - 🔒 **Type-safe** - Full TypeScript support with generic types
-- 🚀 **Modern** - Built for Deno with Node.js compatibility via JSR
-- 📦 **Zero dependencies** - Uses native Deno/Web APIs
+- 🌐 **Multi-runtime** - Runs on Deno, Node.js (≥18), Bun, and Cloudflare
+  Workers using only `fetch()` and standard Web APIs
+- 📦 **Zero dependencies** - No third-party packages
 - 🎨 **Intuitive** - Simple things are simple, complex things are possible
 - 🔄 **Auto-pagination** - Built-in support for fetching large datasets
 - ✨ **Clean errors** - Rich error context for debugging
+- 💾 **Optional Deno-only filesystem cache** - For build resilience in
+  static-site generators (separate import — non-Deno consumers don't pull it in)
+
+## Runtime compatibility
+
+| Runtime            | Main entry (`@rick/tedasuke`)                      | Filesystem cache (`@rick/tedasuke/cache`) |
+| ------------------ | -------------------------------------------------- | ----------------------------------------- |
+| Deno               | ✅                                                 | ✅                                        |
+| Node.js ≥ 18       | ✅                                                 | ❌ (uses `Deno.*` FS APIs)                |
+| Bun                | ✅                                                 | ❌                                        |
+| Cloudflare Workers | ✅                                                 | ❌ (no filesystem)                        |
+| Browsers           | ⚠️ TeamDesk REST API typically does not allow CORS | ❌                                        |
+
+The main entry uses only `fetch()` and standard Web APIs. The cache module is
+deliberately a separate import so non-Deno consumers don't pull in any
+Deno-specific code.
 
 ## Installation
 
 ### Deno
 
-```typescript
-import { TeamDeskClient } from "jsr:@rick/tedasuke";
+```bash
+deno add jsr:@rick/tedasuke
+# Optional Deno-only filesystem cache:
+deno add jsr:@rick/tedasuke/cache
 ```
 
-### Node.js (via JSR)
+```typescript
+import { TeamDeskClient } from "@rick/tedasuke";
+```
+
+### Node.js / Bun (via JSR)
+
+```bash
+npx jsr add @rick/tedasuke
+# or
+bunx jsr add @rick/tedasuke
+```
+
+```typescript
+import { TeamDeskClient } from "@rick/tedasuke";
+```
+
+### Cloudflare Workers
 
 ```bash
 npx jsr add @rick/tedasuke
@@ -31,12 +66,24 @@ npx jsr add @rick/tedasuke
 
 ```typescript
 import { TeamDeskClient } from "@rick/tedasuke";
+
+export default {
+  async fetch(_req, env) {
+    const client = new TeamDeskClient({
+      appId: 12345,
+      token: env.TD_TOKEN,
+      useBearerAuth: true,
+    });
+    const orders = await client.table("Orders").select().limit(50).execute();
+    return Response.json(orders);
+  },
+};
 ```
 
 ## Quick Start
 
 ```typescript
-import { TeamDeskClient } from "jsr:@rick/tedasuke";
+import { TeamDeskClient } from "@rick/tedasuke";
 
 // Create a client (defaults to TeamDesk API)
 const client = new TeamDeskClient({
@@ -284,7 +331,7 @@ import {
   AuthenticationError,
   TeamDeskError,
   ValidationError,
-} from "jsr:@rick/tedasuke";
+} from "@rick/tedasuke";
 
 try {
   const data = await client
@@ -305,17 +352,23 @@ try {
 }
 ```
 
-### Cache Fallback (Build Resilience)
+### Cache Fallback (Build Resilience, Deno only)
 
-TeDasuke includes automatic caching to disk for build resilience. **Caching is
-enabled by default** and falls back to cached data when the API is unavailable.
+The optional `@rick/tedasuke/cache` entry provides a filesystem cache that falls
+back to the last-known-good data when the API is briefly unavailable. It uses
+`Deno.*` filesystem APIs and **only works on Deno** (typical use: Lume /
+static-site builds).
 
-**Default behavior:**
+The `cacheDir` option on `TeamDeskClient` simply records the path the client
+should hand to the cache helpers — it does not pull in any FS code on its own,
+so it's safe to set even on non-Deno runtimes (the path is just unused).
+
+**Default cache directory:**
 
 ```typescript
-import { TeamDeskClient } from "jsr:@rick/tedasuke";
+import { TeamDeskClient } from "@rick/tedasuke";
 
-// Caching is automatic - defaults to "./_tdcache" directory
+// cacheDir defaults to "./_tdcache" — only meaningful when using @rick/tedasuke/cache
 const client = new TeamDeskClient({
   appId: 12345,
   token: Deno.env.get("API_KEY")!,
@@ -328,7 +381,7 @@ const client = new TeamDeskClient({
 const client = new TeamDeskClient({
   appId: 12345,
   token: Deno.env.get("API_KEY")!,
-  cacheDir: "src/_data/_tdcache", // Custom location
+  cacheDir: "src/_data/_tdcache",
 });
 ```
 
@@ -338,22 +391,22 @@ const client = new TeamDeskClient({
 const client = new TeamDeskClient({
   appId: 12345,
   token: Deno.env.get("API_KEY")!,
-  cacheDir: null, // or false - disables caching
+  cacheDir: null, // or false
 });
 ```
 
-**Using `fetchWithCache` helper:**
+**Using `fetchWithCache` helper (Deno only):**
 
 ```typescript
-import { fetchWithCache, TeamDeskClient } from "jsr:@rick/tedasuke";
+import { TeamDeskClient } from "@rick/tedasuke";
+import { fetchWithCache } from "@rick/tedasuke/cache";
 
 const client = new TeamDeskClient({
   appId: 12345,
   token: Deno.env.get("API_KEY")!,
-  cacheDir: "./_tdcache", // Configure once
+  cacheDir: "./_tdcache",
 });
 
-// Pass client directly - it uses the configured cache directory
 const result = await fetchWithCache(
   client,
   "orders",
@@ -378,7 +431,7 @@ Perfect for static site generation with Lume:
 
 ```typescript
 // In your _data/prodb.ts file
-import { TeamDeskClient } from "jsr:@rick/tedasuke";
+import { TeamDeskClient } from "@rick/tedasuke";
 
 const td = new TeamDeskClient({
   appId: 12345,
@@ -642,14 +695,16 @@ deno task example
 
 ## Publishing
 
-This package is published to JSR (JavaScript Registry):
+This package is published to JSR (JavaScript Registry). Releases are automated —
+`.github/workflows/publish.yml` runs on any `v*` tag push and calls
+`deno publish` with provenance via OIDC.
 
 ```bash
-# Dry run to validate
-deno task publish
+# Local dry-run to validate
+deno task publish:dry
 
-# Publish for real
-deno publish
+# Cut a release (creates the tag, pushes it, triggers publish.yml)
+gh release create v0.3.0 --notes "..."
 ```
 
 ## License
