@@ -1,0 +1,22 @@
+{
+  "$schema": "./keys.schema.json",
+  "secrets": [
+    {
+      "name": "PRODB_15331_API_TOKEN_ESOLIA",
+      "ref": "file:PRODB_15331_API_TOKEN_ESOLIA",
+      "kind": "third-party-api-key",
+      "consumers": [
+        {
+          "type": "local"
+        }
+      ],
+      "rotation": {
+        "method": "manual",
+        "max_age_days": 365
+      },
+      "owner": "rick.cogley",
+      "bundle": "work-on:tedasuke",
+      "added": "2026-10-04"
+    }
+  ]
+}
