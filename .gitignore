@@ -31,3 +31,10 @@ _tdcache/
 # Environment files
 .env
 .env.local
+
+# Local secret files (keys init)
+.env.*
+!.env.example
+.dev.vars
+.dev.vars.*
+.esolia/.keys.lock
