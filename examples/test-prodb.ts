@@ -5,17 +5,17 @@
 
 import { TeamDeskClient } from "../mod.ts";
 
-const apiKey = Deno.env.get("PRODB_15331_API_TOKEN_ESOLIA");
+const apiKey = Deno.env.get("DBFLEX_15331_API_TOKEN_ESOLIA");
 
 if (!apiKey) {
   console.error(
-    "❌ Error: PRODB_15331_API_TOKEN_ESOLIA environment variable required",
+    "❌ Error: DBFLEX_15331_API_TOKEN_ESOLIA environment variable required",
   );
   console.error(
     "   Run it with the token injected for this process only, e.g. with eSolia Keys:",
   );
   console.error(
-    "   keys run --only PRODB_15331_API_TOKEN_ESOLIA -- deno run --allow-net --allow-env examples/test-prodb.ts",
+    "   keys run --only DBFLEX_15331_API_TOKEN_ESOLIA -- deno run --allow-net --allow-env examples/test-prodb.ts",
   );
   console.error(
     "   Don't type the token into an export command: it stays in your shell history.",
