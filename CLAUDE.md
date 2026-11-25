@@ -45,10 +45,6 @@ tedasuke/
 │   │                                     # cross-org reusable workflow blocked, so vendored)
 │   └── dependabot.yml                   # Weekly github-actions updates
 │
-├── .claude/
-│   └── rules/
-│       └── change-management.md      # ISO 27001 issue-branch-PR-merge-verify workflow
-│
 ├── src/
 │   ├── cache.ts          # Deno-only — exposed as @rick/tedasuke/cache
 │   ├── client.ts          # TeamDeskClient - main API client
